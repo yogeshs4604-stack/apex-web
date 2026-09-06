@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: apex-web
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: APEX_SANDBOX_MODE
+        value: docker
+      - key: APEX_CONTAINER_NETWORK
+        value: none
+      - key: APEX_JWT_SECRET
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: APEX_DATABASE_URL
+        sync: false
