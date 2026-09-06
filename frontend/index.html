@@ -59,8 +59,8 @@
 </div>
 
 <script>
-const API_BASE = window.location.origin.replace(/^http/, "http"); // same origin as this page
-const WS_BASE = window.location.origin.replace(/^http/, "ws");
+const API_BASE = window.APEX_API_BASE || window.location.origin.replace(/^http/, "http");
+const WS_BASE = window.APEX_WS_BASE || window.location.origin.replace(/^http/, "ws");
 
 let token = localStorage.getItem("apex_token") || null; // NOTE: fine for a local demo; a real
                                                           // production frontend should use an
@@ -73,6 +73,14 @@ const appDiv = document.getElementById("app");
 const authError = document.getElementById("authError");
 const logDiv = document.getElementById("log");
 const quotaDiv = document.getElementById("quota");
+
+async function readJsonResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+  if (!contentType.includes("application/json")) {
+    throw new Error("The APEX backend is not connected to this frontend.");
+  }
+  return response.json();
+}
 
 document.getElementById("authToggle").onclick = () => {
   isSignup = !isSignup;
@@ -92,13 +100,13 @@ document.getElementById("authSubmit").onclick = async () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
     });
-    const data = await res.json();
+    const data = await readJsonResponse(res);
     if (!res.ok) { authError.textContent = data.detail || "Something went wrong."; return; }
     token = data.access_token;
     localStorage.setItem("apex_token", token);
     startApp();
   } catch (e) {
-    authError.textContent = "Could not reach the server: " + e.message;
+    authError.textContent = e.message;
   }
 };
 
